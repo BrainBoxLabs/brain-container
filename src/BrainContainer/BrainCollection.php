@@ -3,87 +3,145 @@ namespace BrainContainer;
 
 class BrainCollection implements \IteratorAggregate,\Countable{
 
-	protected $id_field = 'id';
-	protected $properties;
-	protected $iterator_array=array();
+    protected $Container;
+    protected $models = array();
 
-	protected $container_class_name;
+	public function __construct(BrainContainer $Container=null){
 
-	public function __construct($container=null){
+        if(is_null($Container)){
+            $this->Container = new BrainContainer();
+        }else{
+            $this->Container = $Container;
+        }
 
-		if(!is_object($container)){
-			$this->container_class_name = 'BrainContainer\BrainContainer';
-		}else{
-			$this->container_class_name = get_class($container);
-		}
-
-	}
-
-	/**
-	 * @return BrainContainer
-	 */
-	protected function _createNewContainer(){
-		$class = $this->container_class_name;
-		return new $class();
 	}
 
 	public function count(){
-		return count($this->iterator_array);
+		return count($this->models);
 	}
 
 	public function getIterator(){
-		return new \ArrayIterator($this->iterator_array);
-	}
-
-	public function get($id){
-		$container = $this->_createNewContainer();
-
-		if(isset($this->properties[$id])){
-			$container->fill($this->properties[$id]);
-		}
-
-		return $container;
-	}
-
-	public function setID($property_name){
-		$this->id_field = $property_name;
+		return $this->models;
 	}
 
 	public function first(){
-		reset($this->properties);
-		$container = $this->_createNewContainer();
-		$container->fill(current($this->properties));
-		return $container;
+		reset($this->models);
+		return current($this->models);
 	}
 
-	public function fill($properties=array()){
-		$this->properties = (array)$properties;
-		$this->_rebuildPropertiesWithIdField();
+    public function all(){
+        return $this->models;
+    }
 
-		$iterator_array = array();
-		foreach($this->properties as $key => $value){
-			$container = $this->_createNewContainer();
-			$container->fill($value);
-			$iterator_array[$key] = $container;
-		}
+    public function toArray(){
+        $arrays = array();
+        foreach($this->models as $model){
+            $arrays[] = $model->toArray();
+        }
+        return $arrays;
+    }
 
-		$this->iterator_array = $iterator_array;
+    public function toJSON(){
+        return json_encode($this->toArray());
+    }
 
-	}
+    protected function _createIdKeys($models){
+        $collection = array();
+        foreach($models as $model){
+            if(!$model instanceof BrainContainer){
+                $container = $this->Container->makeNew();
+                $container->fill($model);
+                $model = $container;
+            }
 
-	protected function _rebuildPropertiesWithIdField(){
-		$properties = $this->properties;
+            if(!is_null($model->getID())){
+                $collection[$model->getID()] = $model;
+            }else{
+                $collection[] = $model;
+            }
+        }
+        return $collection;
+    }
 
-		$new_properties = array();
-		foreach($properties as $property){
-			if(is_array($property) && array_key_exists($this->id_field,$property)){
-				$new_properties[$property[$this->id_field]] = $property;
-			}
-		}
+    public function fill($models,$push=false){
+        if(!is_array($models)){
+            $models = array($models);
+        }
 
-		if(count($new_properties) > 0){
-			$this->properties = $new_properties;
-		}
-	}
+        if(!$push){
+            $this->models = $this->_createIdKeys($models);
+        }else{
+            $this->models = array_merge($this->models,$this->_createIdKeys($models));
+        }
+
+        return $this->models;
+
+    }
+
+    public function remove($id){
+        if(isset($this->models[$id])){
+            unset($this->models[$id]);
+            return true;
+        }
+        return false;
+    }
+
+    public function get($id){
+
+        if(isset($this->models[$id])){
+            return $this->models[$id];
+        }
+        return $this->Container->makeNew();
+    }
+
+    public function clear(){
+        $this->models = array();
+    }
+
+    public function push($models){
+        return $this->fill($models,true);
+    }
+
+    public function update(BrainContainer $Container){
+        $id=$Container->getID();
+        if(isset($this->models[$id])){
+            $this->models[$id] = $Container;
+            return true;
+        }
+
+        return false;
+    }
+
+    public function sort($by_field){
+        return usort($this->models,function($a,$b) use($by_field){
+            return strcmp($a->$by_field,$b->$by_field);
+        });
+    }
+
+    public function filter($field,$value){
+        return $this->models = array_filter($this->models,function($model) use($field,$value){
+            if($model->$field == $value){
+                return true;
+            }
+            return false;
+        });
+    }
+
+    public function filterOne($field,$value){
+        $models = array();
+        $match = null;
+
+        try{
+            $models = array_filter($this->models,function($model) use($field,$value){
+                if($model->$field == $value){
+                    $match = $model;
+                    throw new \Exception('match found!');
+                }
+            });
+        }catch(Exception $e){
+            return $match;
+        }
+
+    }
 
 }

@@ -1,27 +1,16 @@
 <?php
 namespace BrainContainer;
 
-class BrainContainer implements \IteratorAggregate,\Countable{
+class BrainContainer{
 
-	protected $properties;
-	protected $container_class_name;
+	protected $properties = array();
+    protected $related = array();
+    protected $fillable = array();
+    protected $idAttr = 'id';
+    protected $clone;
 
-	public function __construct($container=null){
+	public function __construct(){
 
-		if(!is_object($container)){
-			$this->container_class_name = 'BrainContainer\BrainContainer';
-		}else{
-			$this->container_class_name = get_class($container);
-		}
-
-	}
-
-	public function count(){
-		return $this->properties->count();
-	}
-
-	public function getIterator(){
-		return $this->properties->getIterator();
 	}
 
 	public function __toString(){
@@ -30,7 +19,7 @@ class BrainContainer implements \IteratorAggregate,\Countable{
 
 	public function __get($key){
 
-		if(!isset($this->properties[$key])){
+		if(!$this->has($key)){
 			return '';
 		}
 
@@ -38,37 +27,61 @@ class BrainContainer implements \IteratorAggregate,\Countable{
 	}
 
 	public function __set($key,$value){
-		$this->properties[$key] = $value;
+        if(is_object($key)){
+            $this->related[$key] = $value;
+        }else{
+            $this->properties[$key] = $value;
+        }
 	}
 
 	public function __call($method,$args){
-		$container = $this->_createNewContainer();
-		$container->fill($this->$method);
+		if(isset($this->related[$method])){
+            return $this->related[$method];
+        }
 
-		return $container;
+        return $this->_createNewContainer();
 	}
+
+    public function setIdAttr($id_string){
+        $this->idAttr = $id_string;
+    }
+
+    public function getIDAttr(){
+        return $this->idAttr;
+    }
+
+    public function getID(){
+        $id_property = $this->getIDAttr();
+        $id = $this->$id_property;
+
+        if(empty($id)){
+            return null;
+        }
+
+        return $id;
+    }
+
+    public function isNew(){
+        if(is_null($this->getID())){
+            return true;
+        }
+        return false;
+    }
 
 	/**
 	 * @return BrainContainer
 	 */
 	protected function _createNewContainer(){
-		$class = $this->container_class_name;
+		$class = get_called_class();
 		return new $class();
 	}
 
-	public function fill($properties,$is_collection=false){
-		if(!$is_collection){
-			$this->properties = (array)$properties;
-		}else{
-			$this->properties = new BrainCollection($this);
-			$this->properties->fill((array)$properties);
+	public function fill($properties,$unguard=false){
+		foreach($properties as $property => $value){
+            if(in_array($property,$this->fillable) || $unguard == true){
+                $this->$property = $value;
+            }
 		}
-	}
-
-	public function make($properties=array(),$is_collection=false){
-		$container = $this->_createNewContainer();
-		$container->fill($properties,$is_collection);
-		return $container;
 	}
 
 	public function toJson(){
@@ -76,7 +89,40 @@ class BrainContainer implements \IteratorAggregate,\Countable{
 	}
 
 	public function toArray(){
-		return json_decode($this->toJson(),true);
+		return $this->properties;
 	}
+
+    public function escape($key){
+        return strip_tags($this->$key);
+    }
+
+    public function has($key){
+        if(isset($this->properties[$key])){
+            return true;
+        }
+        return false;
+    }
+
+    public function remove($key){
+        if($this->has($key)){
+            unset($this->properties[$key]);
+            return true;
+        }
+
+        return false;
+    }
+
+    public function clear(){
+        $this->properties = array();
+        $this->related = array();
+    }
+
+    public function makeNew(){
+        return $this->_createNewContainer();
+    }
+
+    public function makeClone(){
+        return clone($this);
+    }
 
 }

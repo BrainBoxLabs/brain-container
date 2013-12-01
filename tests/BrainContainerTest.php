@@ -1,4 +1,5 @@
 <?php
+
 use BrainContainer\BrainContainer;
 
 class BrainContainerTest extends PHPUnit_Framework_TestCase{
@@ -18,58 +19,77 @@ class BrainContainerTest extends PHPUnit_Framework_TestCase{
 		$this->assertEquals('bar',$container->foo);
 	}
 
-	public function testFilledContainerHasPropertyValues(){
+	public function testFilledContainerHasNoPropertyValues(){
 		$container = new BrainContainer();
 		$container->fill(array(
 			'foo' => 'bar'
 		));
-		$this->assertEquals('bar',$container->foo);
+		$this->assertEquals('',$container->foo);
 	}
+
+    public function testToArrayReturnsArray(){
+        $container = new BrainContainer();
+        $container->fill(array(
+            'foo'=>'bar'
+        ),true);
+
+        $array = $container->toArray();
+
+        $this->assertArrayHasKey('foo',$array);
+    }
 
 	public function testMagicMethodCallReturnsAnotherBrainContainerInstance(){
 		$container = new BrainContainer();
 		$this->assertEquals('',$container->foo()->bar);
 	}
 
-	public function testToArrayReturnsRecursiveArray(){
-		$container = new BrainContainer();
-		$container->fill(array(
-			'foo'=> (object)array(
-					'bar' => 'yolo'
-				)
-		));
+    public function testGettingId(){
+        $container = new BrainContainer();
+        $container->id = 416;
+        $this->assertEquals(416,$container->getID());
+    }
 
-		$array = $container->toArray();
+    public function testChangingIdAttr(){
+        $container = new BrainContainer();
+        $container->setIdAttr('uuid');
+        $container->uuid = 416;
+        $this->assertEquals(416,$container->getID());
+    }
 
-		$this->assertArrayHasKey('bar',$array['foo']);
-	}
+    public function testContainerIsNew(){
+        $container = new BrainContainer();
+        $this->assertEquals(true,$container->isNew());
+    }
 
-	public function testCanMakeANewContainerFromAnOldOne(){
-		$container = new BrainContainer;
-		$new_container = $container->make(array(
-			'foo' => 'bar'
-		));
-		$this->assertEquals('bar',$new_container->foo);
-	}
+    public function testContainerHasProperty(){
+        $container = new BrainContainer();
+        $container->foo = 'bar';
+        $this->assertEquals(true,$container->has('foo'));
+        $this->assertEquals(false,$container->has('something_that_doesnt_exist'));
+    }
 
-	public function testContainerIsACountableIterableCollection(){
-		$container = new BrainContainer();
-		$container->fill(array(
-			array(
-				'id' => '25',
-				'name' => 'foo'
-			),
-			array(
-				'id' => '30',
-				'name' => 'foo'
-			)
-		),true);
+    public function testRemovePropertyFromContainer(){
+        $container = new BrainContainer();
+        $container->foo = 'bar';
+        $container->remove('foo');
+        $this->assertEquals('',$container->foo);
+    }
 
-		foreach($container as $c){
-			$this->assertEquals('foo',$c->name);
-		}
+    public function testClearingAContainer(){
+        $container = new BrainContainer();
+        $container->foo = 'bar';
+        $container->clear();
+        $this->assertEquals('',$container->foo);
+    }
 
-		$this->assertEquals(2,count($container));
-	}
+    public function testContainerCanBeCloned(){
+        $container = new BrainContainer;
+        $container->foo = 'bar';
+        $container2 = $container->makeClone();
+        $container3 = $container2->makeNew();
+
+        $this->assertEquals('bar',$container2->foo);
+        $this->assertEquals('',$container3->foo);
+    }
 
 }
