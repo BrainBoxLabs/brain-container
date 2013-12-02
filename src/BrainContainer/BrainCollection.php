@@ -21,7 +21,7 @@ class BrainCollection implements \IteratorAggregate,\Countable{
 	}
 
 	public function getIterator(){
-		return $this->models;
+		return new \ArrayIterator($this->models);
 	}
 
 	public function first(){
@@ -73,6 +73,7 @@ class BrainCollection implements \IteratorAggregate,\Countable{
         }else{
             $this->models = array_merge($this->models,$this->_createIdKeys($models));
         }
+
 
         return $this->models;
 
