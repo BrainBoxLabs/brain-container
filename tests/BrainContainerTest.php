@@ -19,23 +19,23 @@ class BrainContainerTest extends PHPUnit_Framework_TestCase{
 		$this->assertEquals('bar',$container->foo);
 	}
 
-	public function testFilledContainerHasNoPropertyValues(){
+	public function testFilledContainerHasPropertyValues(){
 		$container = new BrainContainer();
 		$container->fill(array(
 			'foo' => 'bar'
 		));
-		$this->assertEquals('',$container->foo);
+		$this->assertEquals('bar',$container->foo);
 	}
 
-    public function testToArrayReturnsArray(){
+    public function testToArrayReturnsEmptyArray(){
         $container = new BrainContainer();
         $container->fill(array(
             'foo'=>'bar'
-        ),true);
+        ));
 
         $array = $container->toArray();
 
-        $this->assertArrayHasKey('foo',$array);
+        $this->assertArrayNotHasKey('foo',$array);
     }
 
 	public function testMagicMethodCallReturnsAnotherBrainContainerInstance(){

@@ -5,7 +5,7 @@ class BrainContainer{
 
 	protected $properties = array();
     protected $related = array();
-    protected $fillable = array();
+    protected $allowable = array();
     protected $idAttr = 'id';
     protected $clone;
 
@@ -27,7 +27,7 @@ class BrainContainer{
 	}
 
 	public function __set($key,$value){
-        if(is_object($key)){
+        if(is_object($value) || is_array($value)){
             $this->related[$key] = $value;
         }else{
             $this->properties[$key] = $value;
@@ -76,20 +76,24 @@ class BrainContainer{
 		return new $class();
 	}
 
-	public function fill($properties,$unguard=false){
+	public function fill($properties){
 		foreach($properties as $property => $value){
-            if(in_array($property,$this->fillable) || $unguard == true){
-                $this->$property = $value;
-            }
+            $this->$property = $value;
 		}
 	}
 
 	public function toJson(){
-		return json_encode($this->properties);
+		return json_encode($this->toArray());
 	}
 
-	public function toArray(){
-		return $this->properties;
+	public function toArray($override=false){
+        $allowable=array();
+        foreach($this->properties as $k => $v){
+            if($override | in_array($k,$this->allowable)){
+                $allowable[] = $v;
+            }
+        }
+		return $allowable;
 	}
 
     public function escape($key){
