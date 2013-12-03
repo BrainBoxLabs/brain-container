@@ -24,6 +24,9 @@ class BrainCollection implements \IteratorAggregate,\Countable{
 		return new \ArrayIterator($this->models);
 	}
 
+    /**
+     * @return BrainContainer
+     */
 	public function first(){
 		reset($this->models);
 		return current($this->models);
@@ -87,6 +90,9 @@ class BrainCollection implements \IteratorAggregate,\Countable{
         return false;
     }
 
+    /**
+     * @return BrainContainer
+     */
     public function get($id){
 
         if(isset($this->models[$id])){
@@ -128,6 +134,9 @@ class BrainCollection implements \IteratorAggregate,\Countable{
         });
     }
 
+    /**
+     * @return BrainContainer
+     */
     public function filterOne($field,$value){
         $match = null;
 

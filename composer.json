@@ -1,8 +1,8 @@
 {
 	"name": "brainboxlabs/brain-container",
 	"type": "library",
-	"description": "Framework agnostic smart objects for MVC Views.",
-	"keywords": ["MVC","Views","laravel","artisan"],
+	"description": "Framework agnostic smart objects for Data Modeling.",
+	"keywords": ["MVC","Models","Data Modeling","laravel","artisan"],
 	"homepage": "https://github.com/BrainBoxLabs/brain-container",
 	"license": "MIT",
 	"authors": [
