@@ -33,10 +33,10 @@ class BrainCollection implements \IteratorAggregate,\Countable{
         return $this->models;
     }
 
-    public function toArray(){
+    public function toArray($override=false){
         $arrays = array();
-        foreach($this->models as $model){
-            $arrays[] = $model->toArray();
+        foreach($this->models as $i => $model){
+            $arrays[$i] = $model->toArray($override);
         }
         return $arrays;
     }
@@ -71,7 +71,7 @@ class BrainCollection implements \IteratorAggregate,\Countable{
         if(!$push){
             $this->models = $this->_createIdKeys($models);
         }else{
-            $this->models = array_merge($this->models,$this->_createIdKeys($models));
+            $this->models = ($this->models+$this->_createIdKeys($models));
         }
 
 
@@ -114,7 +114,7 @@ class BrainCollection implements \IteratorAggregate,\Countable{
     }
 
     public function sort($by_field){
-        return usort($this->models,function($a,$b) use($by_field){
+        return uasort($this->models,function($a,$b) use($by_field){
             return strcmp($a->$by_field,$b->$by_field);
         });
     }
@@ -129,19 +129,16 @@ class BrainCollection implements \IteratorAggregate,\Countable{
     }
 
     public function filterOne($field,$value){
-        $models = array();
         $match = null;
 
-        try{
-            $models = array_filter($this->models,function($model) use($field,$value){
-                if($model->$field == $value){
-                    $match = $model;
-                    throw new \Exception('match found!');
-                }
-            });
-        }catch(Exception $e){
-            return $match;
+        foreach($this->models as $m){
+            if($m->$field == $value){
+                $match = $m;
+                break;
+            }
         }
+
+        return $match;
 
     }
 
