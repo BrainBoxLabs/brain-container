@@ -35,7 +35,7 @@ class BrainContainerTest extends PHPUnit_Framework_TestCase{
 
         $array = $container->toArray();
 
-        $this->assertArrayNotHasKey('foo',$array);
+        $this->assertArrayHasKey('foo',$array);
     }
 
 	public function testMagicMethodCallReturnsAnotherBrainContainerInstance(){

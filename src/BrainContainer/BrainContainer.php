@@ -28,6 +28,11 @@ class BrainContainer{
 
 	public function __set($key,$value){
         if(is_object($value) || is_array($value)){
+            if(is_array($value)){
+                $container = $this->_createNewContainer();
+                $container->fill($value);
+                $value = $container;
+            }
             $this->related[$key] = $value;
         }else{
             $this->properties[$key] = $value;
@@ -76,24 +81,40 @@ class BrainContainer{
 		return new $class();
 	}
 
+    protected function _isAllowed($property,$allow_all=false){
+        $allowable = false;
+
+        if(count($this->allowable) < 1){
+            $allowable = true;
+        }elseif(in_array($property,$this->allowable)){
+            $allowable = true;
+        }
+
+        if($allow_all){
+            $allowable = true;
+        }
+
+        return $allowable;
+    }
+
 	public function fill($properties){
 		foreach($properties as $property => $value){
             $this->$property = $value;
 		}
 	}
 
-	public function toJson(){
-		return json_encode($this->toArray());
+	public function toJson($allow_all=false){
+		return json_encode($this->toArray($allow_all));
 	}
 
-	public function toArray($override=false){
-        $allowable=array();
-        foreach($this->properties as $k => $v){
-            if($override | in_array($k,$this->allowable)){
-                $allowable[] = $v;
+	public function toArray($allow_all=false){
+        $properties = array();
+        foreach($this->properties as $property => $value){
+            if($this->_isAllowed($property,$allow_all)){
+                $properties[$property] = $value;
             }
         }
-		return $allowable;
+        return $properties;
 	}
 
     public function escape($key){

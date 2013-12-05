@@ -116,6 +116,7 @@ class BrainCollectionTest extends PHPUnit_Framework_TestCase{
     public function testCollectionCanFilterOneOut(){
         $collection = new BrainCollection();
         $collection->fill($this->_getTestCollectionData());
+
         $collection->push(array(
             array(
                 'id' => 3,

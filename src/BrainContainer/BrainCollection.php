@@ -44,8 +44,12 @@ class BrainCollection implements \IteratorAggregate,\Countable{
         return $arrays;
     }
 
-    public function toJSON(){
-        return json_encode($this->toArray());
+    public function toJSON($override=false){
+        $arrays = array();
+        foreach($this->models as $i => $model){
+            $arrays[$i] = $model->toJSON($override);
+        }
+        return $arrays;
     }
 
     protected function _createIdKeys($models){
