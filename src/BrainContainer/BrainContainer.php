@@ -17,6 +17,15 @@ class BrainContainer{
 		return '';
 	}
 
+    function __isset($key)
+    {
+        if(isset($this->properties[$key])){
+            return true;
+        }
+
+        return false;
+    }
+
 	public function __get($key){
 
 		if(!$this->has($key)){
@@ -26,9 +35,10 @@ class BrainContainer{
 		return $this->properties[$key];
 	}
 
-	public function __set($key,$value){
+    public function __set($key,$value){
         if(is_object($value) || is_array($value)){
-            if(is_array($value)){
+            if(is_array($value) || $value instanceof \stdClass){
+                $value = (array)$value;
                 $container = $this->_createNewContainer();
                 $container->fill($value);
                 $value = $container;
@@ -37,7 +47,7 @@ class BrainContainer{
         }else{
             $this->properties[$key] = $value;
         }
-	}
+    }
 
 	public function __call($method,$args){
 		if(isset($this->related[$method])){
