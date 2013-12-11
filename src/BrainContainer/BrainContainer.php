@@ -45,7 +45,9 @@ class BrainContainer{
             }
             $this->related[$key] = $value;
         }else{
-            $this->properties[$key] = $value;
+			if($this->_isAllowed($key)){
+				$this->properties[$key] = $value;
+			}
         }
     }
 
