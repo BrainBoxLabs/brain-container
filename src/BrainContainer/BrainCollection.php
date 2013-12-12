@@ -36,18 +36,18 @@ class BrainCollection implements \IteratorAggregate,\Countable{
         return $this->models;
     }
 
-    public function toArray($override=false){
+    public function toArray(){
         $arrays = array();
         foreach($this->models as $i => $model){
-            $arrays[$i] = $model->toArray($override);
+            $arrays[$i] = $model->toArray();
         }
         return $arrays;
     }
 
-    public function toJSON($override=false){
+    public function toJSON(){
         $arrays = array();
         foreach($this->models as $i => $model){
-            $arrays[$i] = $model->toJSON($override);
+            $arrays[$i] = $model->toJSON();
         }
         return $arrays;
     }
